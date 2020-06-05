@@ -1,0 +1,29 @@
+#x-circe {
+    border: 1px solid #0089ad;
+    padding: 0.75em;
+    padding-right: 10em;
+    margin-bottom: 1em;
+
+    display: flex;
+    align-items: flex-start;
+}
+
+#x-circe > div {
+    margin-right: 1em;
+}
+
+#x-circe form {
+    border: 1px dashed #aaa;
+    padding-left: 0.75em;
+}
+
+#x-circe label {
+    font-weight: bold;
+    display: inline-block;
+    width: 15em;
+}
+
+#x-circe-session-file-clear {
+    font-weight: bold;
+    color: red;
+}

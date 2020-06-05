@@ -1,0 +1,22 @@
+{
+  "name": "circe",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "compile": "parcel build src/main.ts",
+    "watch": "parcel src/main.ts",
+    "build": "npm run compile && web-ext build -o -i package*.json",
+    "start": "web-ext run --start-url my.vinci.be",
+    "sign": "web-ext sign"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4",
+    "typescript": "^3.9.5",
+    "web-ext": "^4.2.0"
+  },
+  "dependencies": {
+    "xlsx": "^0.16.2"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "Circe",
+  "version": "1.8",
+  "description": "Circe",
+
+  "icons": {
+	"48": "icons/circe-48.jpg",
+    "96": "icons/circe-96.jpg"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.my.vinci.be/portail/CE/resEncode.do*","*://*.my-preprod.vinci.be/portail/CE/resEncode.do*"],
+      "js": ["dist/main.js"],
+      "css": ["styles/main.css"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    "images/circe-96.jpg"
+  ]
+}
