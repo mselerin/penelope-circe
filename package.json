@@ -5,7 +5,7 @@
   "scripts": {
     "compile": "parcel build src/main.ts --no-source-maps",
     "watch": "parcel watch src/main.ts --no-source-maps",
-    "build": "npm run compile && web-ext build -o -i package*.json out",
+    "build": "npm run compile && web-ext build -o -i package*.json src out",
     "start": "web-ext run --start-url my.vinci.be",
     "sign": "web-ext sign"
   },
