@@ -3,8 +3,11 @@ declare const browser: any;
 
 const SESSION_KEY = 'circe-data';
 
-initCirceAddon();
-detectPreviousFile();
+if (window.location.pathname === '/portail/CE/resEncode.do') {
+    initCirceAddon();
+} else {
+    removeSessionData();
+}
 
 
 function initCirceAddon() {
@@ -27,43 +30,39 @@ function initCirceAddon() {
                     injecte les notes en correspondance avec les matricules trouvés dans le fichier Excel donné.
                     
                     <br />Si le matricule n'est pas présent dans le fichier Excel, il sera surligné en <span style="color: orange">orange</span>.
-                    <br />Si le matricule a été traité, il sera surligné en <span style="color: green">vert</span>.
+                    <br />Si le matricule a été correctement traité, il sera surligné en <span style="color: green">vert</span>.
             </strong>
         </p>
         
         <p>
             <strong>Instructions :</strong> 
-            <ul> 
+            <ol> 
                 <li>Le fichier Excel doit contenir une feuille nommée "Donn&eacute;es"</li>
-                <li>Indiquer les colonnes contenant les matricules et les notes (A = 0 ; B = 1 ; ...)</li>
+                <li>Indiquer le nom des colonnes contenant les matricules et les notes (par défaut : 'Matricule' et 'Note')</li>
                 <li>La colonne contenant les notes ne doit pas contenir de formule mais bien une valeur directe</li>
-            </ul>
+            </ol>
         </p>
         
-        <form>
-            <div id="x-circe-choose-file">
-                <p>
-                    <label>Fichier Excel :</label>
-                    <input id="x-circe-excelfile" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
-                </p>
-                
-                <p>
-                    <label>N&deg; colonne 'Matricule' :</label>
-                    <input id="x-circe-column-matricule" type="text" value="0" size="2" />
-                    <small>(colonne A = 0, colonne B = 1, ...)</small>
-                </p>
-                
-                <p>
-                    <label>N&deg; colonne 'Note' :</label>
-                    <input id="x-circe-column-note" type="text" value="3" size="2" />
-                    <small>(colonne A = 0, colonne B = 1, ...)</small>
-                </p>
-            </div>
+        <form id="x-circe-form">
+            <p id="x-circe-choose-file">
+                <label>Fichier Excel :</label>
+                <input id="x-circe-excelfile" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+            </p>
                 
             <p id="x-circe-session-file" style="display: none;">
                 <label>Fichier Excel :</label>
                 <span id="x-circe-session-file-name"></span>
                 [<a id="x-circe-session-file-clear" href="#">Annuler</a>]
+            </p>
+            
+            <p>
+                <label>Nom colonne 'Matricule' :</label>
+                <input id="x-circe-column-matricule" type="text" value="Matricule" size="12" />
+            </p>
+            
+            <p>
+                <label>Nom colonne 'Note' :</label>
+                <input id="x-circe-column-note" type="text" value="Note" size="12" />
             </p>
             
             <p>
@@ -81,7 +80,6 @@ function initCirceAddon() {
 </div>
 `;
 
-
     // Insertion du bloc dans la page
     const div = document.createElement('div');
     div.innerHTML = template;
@@ -94,10 +92,16 @@ function initCirceAddon() {
     document.getElementById('x-circe-btn-fill-e').onclick = fillE;
     document.getElementById('x-circe-btn-clear-notes').onclick = clearNotes;
     document.getElementById('x-circe-session-file-clear').onclick = clearPreviousFile;
+    document.getElementById('x-circe-excelfile').onchange = readFile;
+
+    document.getElementById('x-circe-column-matricule').onchange = updateSessionData;
+    document.getElementById('x-circe-column-note').onchange = updateSessionData;
     document.getElementById('x-circe-round-note').onchange = updateSessionData;
 
-    const inputFile = document.getElementById('x-circe-excelfile') as HTMLInputElement;
-    inputFile.onchange = readFile;
+    detectPreviousFile();
+
+    // Ajout d'un listener sur les 2 boutons qui permettent de quitter la page
+
 }
 
 
@@ -114,22 +118,26 @@ function getSessionData(): SessionData {
 function updateSessionData(): void {
     const sessionData = getSessionData();
     if (sessionData) {
-        saveSessionData(sessionData.filename, sessionData.notes);
+        saveSessionData(sessionData.filename, sessionData.rows);
     }
 }
 
-function saveSessionData(filename: string, notes: NoteRow[]): void {
+function saveSessionData(filename: string, rows: any[]): void {
     // Sauver dans le localStorage pour le ré-utiliser plus tard
-    const colMat = +(<HTMLInputElement>document.getElementById('x-circe-column-matricule')).value;
-    const colNote = +(<HTMLInputElement>document.getElementById('x-circe-column-note')).value;
+    const colMat = (<HTMLInputElement>document.getElementById('x-circe-column-matricule')).value;
+    const colNote = (<HTMLInputElement>document.getElementById('x-circe-column-note')).value;
     const roundNote = (<HTMLInputElement>document.getElementById('x-circe-round-note')).checked;
 
     const sessionData: SessionData = {
-        filename, notes,
+        filename, rows,
         colMat, colNote, roundNote
     };
 
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+}
+
+function removeSessionData() {
+    sessionStorage.removeItem(SESSION_KEY);
 }
 
 function detectPreviousFile() {
@@ -139,8 +147,8 @@ function detectPreviousFile() {
         (<HTMLElement>document.getElementById('x-circe-session-file')).style.display = '';
         (<HTMLElement>document.getElementById('x-circe-session-file-name')).innerText = sessionData.filename;
 
-        (<HTMLInputElement>document.getElementById('x-circe-column-matricule')).value = '' + sessionData.colMat;
-        (<HTMLInputElement>document.getElementById('x-circe-column-note')).value = '' + sessionData.colNote;
+        (<HTMLInputElement>document.getElementById('x-circe-column-matricule')).value = sessionData.colMat;
+        (<HTMLInputElement>document.getElementById('x-circe-column-note')).value = sessionData.colNote;
         (<HTMLInputElement>document.getElementById('x-circe-round-note')).checked = sessionData.roundNote;
     }
     else {
@@ -151,10 +159,8 @@ function detectPreviousFile() {
 }
 
 function clearPreviousFile() {
-    sessionStorage.removeItem(SESSION_KEY);
-
-    const inputFile = document.getElementById('x-circe-excelfile') as HTMLInputElement;
-    inputFile.value = null;
+    removeSessionData();
+    (<HTMLFormElement>document.getElementById('x-circe-form')).reset();
 
     detectPreviousFile();
 }
@@ -172,25 +178,9 @@ function readFile() {
         const data = reader.result as string;
 
         try {
-            const rows: NoteRow[] = [];
-            const colMat = +(<HTMLInputElement>document.getElementById('x-circe-column-matricule')).value;
-            const colNote = +(<HTMLInputElement>document.getElementById('x-circe-column-note')).value;
-
             const workbook = XLSX.read(data, {type: 'binary'});
             const sheet = workbook.Sheets["Donn\u00E9es"];
-            const range = XLSX.utils.decode_range(sheet["!ref"]);
-
-            for (let rowNum = range.s.r; rowNum <= range.e.r; rowNum++) {
-                const firstCell = sheet[XLSX.utils.encode_cell({r: rowNum, c: colMat})];
-                const secondCell = sheet[XLSX.utils.encode_cell({r: rowNum, c: colNote})];
-
-                if (secondCell) {
-                    rows.push({
-                        matricule: firstCell.v,
-                        note: secondCell.v
-                    });
-                }
-            }
+            const rows = XLSX.utils.sheet_to_json(sheet);
 
             if (!rows || rows.length === 0) {
                 throw new Error('invalid_file');
@@ -200,7 +190,7 @@ function readFile() {
             detectPreviousFile();
         }
         catch (err) {
-            alert('Le fichier choisi semble invalide.\nVeuillez vérifier le contenu du fichier et les numéros de colonnes.');
+            alert('Le fichier choisi semble invalide.\nVeuillez vérifier le contenu du fichier.');
             console.log(err);
             clearPreviousFile();
         }
@@ -218,31 +208,33 @@ function fillNotes() {
         return;
     }
 
-    const roundNote = (<HTMLInputElement>document.getElementById('x-circe-round-note')).checked;
-
     const rows = extractMatriculeRows();
+    const notes = data.rows;
+
     rows.forEach(row => {
         const matrElem = document.getElementsByClassName(`matricule_${row.id}`)[0] as HTMLElement;
         const coteElem = document.getElementById(`cote_${row.id}`) as HTMLInputElement;
 
-        const noteRow = data.notes.find(n => n.matricule === row.matricule);
+        const noteRow = notes.find(n => n[data.colMat] === row.matricule);
         if (noteRow) {
             /* pas de coteElem == note déjà encodée par appariteur */
 
             if (coteElem == null) {
                 matrElem.style.backgroundColor = 'green';
             }
-            else if (noteRow.note) {
-                let note = noteRow.note;
+            else if (noteRow[data.colNote]) {
+                let note = noteRow[data.colNote];
 
-                if (roundNote) {
+                if (data.roundNote) {
                     if (!isNaN(+note)) {
                         note = '' + (Math.round(+note * 2) / 2);
                     }
                 }
 
-                coteElem.value = note;
-                matrElem.style.backgroundColor = 'green';
+                if (coteElem.value === '') {
+                    coteElem.value = note;
+                    matrElem.style.backgroundColor = 'green';
+                }
             }
         }
         else {
@@ -306,15 +298,10 @@ interface MatriculeRow {
     id: string;
 }
 
-interface NoteRow {
-    matricule: string;
-    note: string;
-}
-
 interface SessionData {
     filename: string;
-    notes: NoteRow[];
-    colMat: number;
-    colNote: number;
+    rows: any[];
+    colMat: string;
+    colNote: string;
     roundNote: boolean;
 }
