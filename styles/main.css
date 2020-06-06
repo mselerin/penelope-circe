@@ -27,3 +27,9 @@
     font-weight: bold;
     color: red;
 }
+
+#x-circe-session-file-warning {
+    white-space: pre-line;
+    font-weight: bold;
+    color: #ec0000;
+}

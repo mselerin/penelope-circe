@@ -53,6 +53,7 @@ function initCirceAddon() {
                 <label>Fichier Excel :</label>
                 <span id="x-circe-session-file-name"></span>
                 [<a id="x-circe-session-file-clear" href="#">Annuler</a>]
+                <span id="x-circe-session-file-warning"></span>
             </p>
             
             <p>
@@ -167,6 +168,9 @@ function clearPreviousFile() {
 
 
 function readFile() {
+    const warningElem = document.getElementById('x-circe-session-file-warning') as HTMLElement;
+    warningElem.style.display = 'none';
+
     const input = document.getElementById('x-circe-excelfile') as HTMLInputElement;
     if (!input.files) {
         return;
@@ -184,6 +188,20 @@ function readFile() {
 
             if (!rows || rows.length === 0) {
                 throw new Error('invalid_file');
+            }
+
+            // Si on a un 'Code Cours' dans la 1e ligne, on tente de valider qu'il s'agit du bon cours
+            const codeCours = rows[0]['Code Cours'];
+            if (codeCours) {
+                const found = Array.from(document.querySelectorAll('td:first-child'))
+                    .some(e => e.textContent.trim() === codeCours);
+
+                if (!found) {
+                    warningElem.style.display = '';
+                    warningElem.innerHTML = `
+                        Attention : le code du cours dans le fichier Excel (${codeCours}) ne semble pas correspondre avec celui de la page.
+                    `;
+                }
             }
 
             saveSessionData(file.name, rows);
