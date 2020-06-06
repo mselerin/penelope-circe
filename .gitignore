@@ -27,3 +27,4 @@
 /web-ext-artifacts/
 /node_modules/
 /.cache/
+/.env
