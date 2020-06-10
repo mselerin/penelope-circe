@@ -185,7 +185,6 @@ function readFile() {
             const workbook = XLSX.read(data, {type: 'binary'});
             const sheet = workbook.Sheets["Donn\u00E9es"];
             const rows = XLSX.utils.sheet_to_json(sheet);
-            console.log(rows);
 
             if (!rows || rows.length === 0) {
                 throw new Error('invalid_file');
