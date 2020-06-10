@@ -230,33 +230,37 @@ function fillNotes() {
     const notes = data.rows;
 
     rows.forEach(row => {
-        const matrElem = document.getElementsByClassName(`matricule_${row.id}`)[0] as HTMLElement;
-        const coteElem = document.getElementById(`cote_${row.id}`) as HTMLInputElement;
+        try {
+            const matrElem = getMatriculeElem(row.id);
+            const coteElem = getCoteElem(row.id);
 
-        const noteRow = notes.find(n => n[data.colMat] === row.matricule);
-        if (noteRow) {
-            /* pas de coteElem == note déjà encodée par appariteur */
+            if (matrElem) {
+                const noteRow = notes.find(n => n[data.colMat] === row.matricule);
+                if (noteRow) {
+                    // pas de coteElem == note déjà encodée par appariteur
+                    if (coteElem == null) {
+                        matrElem.style.backgroundColor = 'green';
+                    } else if (noteRow[data.colNote]) {
+                        let note = noteRow[data.colNote];
 
-            if (coteElem == null) {
-                matrElem.style.backgroundColor = 'green';
-            }
-            else if (noteRow[data.colNote]) {
-                let note = noteRow[data.colNote];
+                        if (data.roundNote) {
+                            if (!isNaN(+note)) {
+                                note = '' + (Math.round(+note * 2) / 2);
+                            }
+                        }
 
-                if (data.roundNote) {
-                    if (!isNaN(+note)) {
-                        note = '' + (Math.round(+note * 2) / 2);
+                        if (coteElem.value === '') {
+                            coteElem.value = note;
+                            matrElem.style.backgroundColor = 'green';
+                        }
                     }
-                }
-
-                if (coteElem.value === '') {
-                    coteElem.value = note;
-                    matrElem.style.backgroundColor = 'green';
+                } else {
+                    matrElem.style.backgroundColor = 'orange';
                 }
             }
         }
-        else {
-            matrElem.style.backgroundColor = 'orange';
+        catch (err) {
+            console.error(err);
         }
     });
 }
@@ -265,19 +269,33 @@ function fillNotes() {
 function fillE() {
     const rows = extractMatriculeRows();
     rows.forEach(row => {
-        const matrElem = document.getElementsByClassName(`matricule_${row.id}`)[0] as HTMLElement;
-        const coteElem = document.getElementById(`cote_${row.id}`) as HTMLInputElement;
+        const matrElem = getMatriculeElem(row.id);
+        const coteElem = getCoteElem(row.id);
 
-        /* pas de coteElem == note déjà encodée par appariteur */
-
-        if (coteElem == null) {
-            matrElem.style.backgroundColor = 'green';
-        }
-        else if (coteElem.value === '') {
-            coteElem.value = 'E';
-            matrElem.style.backgroundColor = 'green';
+        if (matrElem) {
+            // pas de coteElem == note déjà encodée par appariteur
+            if (coteElem == null) {
+                matrElem.style.backgroundColor = 'green';
+            } else if (coteElem.value === '') {
+                coteElem.value = 'E';
+                matrElem.style.backgroundColor = 'green';
+            }
         }
     });
+}
+
+
+function getMatriculeElem(id: string): HTMLElement {
+    const elems = document.getElementsByClassName(`matricule_${id}`);
+    if (elems && elems.length > 0) {
+        return elems[0] as HTMLElement;
+    }
+
+    return null;
+}
+
+function getCoteElem(id: string): HTMLInputElement {
+    return document.getElementById(`cote_${id}`) as HTMLInputElement;
 }
 
 
