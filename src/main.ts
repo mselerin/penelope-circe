@@ -185,6 +185,7 @@ function readFile() {
             const workbook = XLSX.read(data, {type: 'binary'});
             const sheet = workbook.Sheets["Donn\u00E9es"];
             const rows = XLSX.utils.sheet_to_json(sheet);
+            console.log(rows);
 
             if (!rows || rows.length === 0) {
                 throw new Error('invalid_file');
@@ -240,10 +241,10 @@ function fillNotes() {
                     // pas de coteElem == note déjà encodée par appariteur
                     if (coteElem == null) {
                         matrElem.style.backgroundColor = 'green';
-                    } else if (noteRow[data.colNote]) {
+                    } else {
                         let note = noteRow[data.colNote];
 
-                        if (data.roundNote) {
+                        if (note && data.roundNote) {
                             if (!isNaN(+note)) {
                                 note = '' + (Math.round(+note * 2) / 2);
                             }
