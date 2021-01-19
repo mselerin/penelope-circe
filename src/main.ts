@@ -243,10 +243,16 @@ function fillNotes() {
                     } else {
                         let note = noteRow[data.colNote];
 
-                        if (note && data.roundNote) {
-                            if (!isNaN(+note)) {
+                        if (note && !isNaN(+note)) {
+                            if (data.roundNote) {
                                 note = '' + (Math.round(+note * 2) / 2);
+                            } else {
+                                note = '' + (Math.round(+note * 100) / 100);
                             }
+                        }
+
+                        if (note == undefined) {
+                            note = '';
                         }
 
                         if (coteElem.value === '') {
